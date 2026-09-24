@@ -33,14 +33,14 @@ func Read() (Config, error) {
 	return data, nil
 }
 
-func (c Config) SetUser(usr string) (Config, error) {
+func (c *Config) SetUser(usr string) (Config, error) {
 	c.CurrentUsername = usr
-	err := write(c)
+	err := write(*c)
 	if err != nil {
 		return Config{}, fmt.Errorf("error: %v", err)
 	}
 
-	return c, nil
+	return *c, nil
 }
 
 func write(cfg Config) error {
