@@ -30,7 +30,7 @@ func handlerLogin(s *state, cmd command) error {
 	return nil
 }
 
-func handleRegister(s *state, cmd command) error {
+func handlerRegister(s *state, cmd command) error {
 	if len(cmd.args) == 0 {
 		return errors.New("no name provided")
 	}
@@ -62,13 +62,30 @@ func handleRegister(s *state, cmd command) error {
 	return nil
 }
 
-func handleReset(s *state, cmd command) error {
+func handlerReset(s *state, cmd command) error {
 	err := s.db.ResetDB(context.Background())
 	if err != nil {
 		return fmt.Errorf("couldn't reset database: %w", err)
 	}
 
 	fmt.Println("Database successfully cleared")
+
+	return nil
+}
+
+func handlerUsers(s *state, cmd command) error {
+	users, err := s.db.GetUsers(context.Background())
+	if err != nil {
+		return fmt.Errorf("couldn't get users' data: %w", err)
+	}
+
+	for _, user := range users {
+		if s.cfg.CurrentUsername != user.Name {
+			fmt.Printf("* %s\n", user.Name)
+		} else {
+			fmt.Printf("* %s (current)\n", user.Name)
+		}
+	}
 
 	return nil
 }

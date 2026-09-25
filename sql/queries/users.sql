@@ -16,3 +16,9 @@ WHERE
 
 -- name: ResetDB :exec
 TRUNCATE users CASCADE;
+
+-- name: GetUsers :many
+SELECT
+  *
+FROM
+  users;

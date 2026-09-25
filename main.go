@@ -39,8 +39,9 @@ func main() {
 
 	// register all commands
 	commands.register("login", handlerLogin)
-	commands.register("register", handleRegister)
-	commands.register("reset", handleReset)
+	commands.register("register", handlerRegister)
+	commands.register("reset", handlerReset)
+	commands.register("users", handlerUsers)
 
 	// parse cli arguments
 	if len(os.Args) < 2 {
