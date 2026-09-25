@@ -13,3 +13,6 @@ FROM
   users
 WHERE
   name = $1;
+
+-- name: ResetDB :exec
+TRUNCATE users CASCADE;

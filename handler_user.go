@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/Sandro-GG/gator/internal/database"
@@ -18,7 +17,7 @@ func handlerLogin(s *state, cmd command) error {
 
 	_, err := s.db.GetUser(context.Background(), cmd.args[0])
 	if err != nil {
-		log.Fatalf("user %q doesn't exist", cmd.args[0])
+		return fmt.Errorf("user %q doesn't exist", cmd.args[0])
 	}
 
 	_, err = s.cfg.SetUser(cmd.args[0])
@@ -40,7 +39,7 @@ func handleRegister(s *state, cmd command) error {
 
 	_, err := s.db.GetUser(context.Background(), username)
 	if err == nil {
-		log.Fatalf("user %q already exists", username)
+		return fmt.Errorf("user %q already exists", username)
 	}
 
 	user, err := s.db.CreateUser(context.Background(), database.CreateUserParams{
@@ -58,8 +57,18 @@ func handleRegister(s *state, cmd command) error {
 		return fmt.Errorf("error: %w", err)
 	}
 
-	s.cfg.CurrentUsername = user.Name
-	fmt.Printf("New user has been created\nID: %v\nCreatedAt: %v\nUpdatedAt: %v\nName:%s", user.ID, user.CreatedAt, user.UpdatedAt, user.Name)
+	fmt.Printf("New user has been created\nID: %v\nCreatedAt: %v\nUpdatedAt: %v\nName:%s\n", user.ID, user.CreatedAt, user.UpdatedAt, user.Name)
+
+	return nil
+}
+
+func handleReset(s *state, cmd command) error {
+	err := s.db.ResetDB(context.Background())
+	if err != nil {
+		return fmt.Errorf("couldn't reset database: %w", err)
+	}
+
+	fmt.Println("Database successfully cleared")
 
 	return nil
 }
