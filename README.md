@@ -21,6 +21,7 @@ without leaving the terminal.
 - User registration backed by Postgres
 - Login that switches the active user (and rejects unknown ones)
 - Database reset command to quickly wipe records during development
+- `users` command to list all registered users, marking the currently logged-in one
 
 ## Roadmap
 
