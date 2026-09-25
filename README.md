@@ -20,6 +20,7 @@ without leaving the terminal.
 - JSON config file at `~/.gatorconfig.json` that tracks the database URL and the current user
 - User registration backed by Postgres
 - Login that switches the active user (and rejects unknown ones)
+- Database reset command to quickly wipe records during development
 
 ## Roadmap
 
