@@ -4,9 +4,11 @@ import (
 	"fmt"
 
 	"github.com/Sandro-GG/gator/internal/config"
+	"github.com/Sandro-GG/gator/internal/database"
 )
 
 type state struct {
+	db  *database.Queries
 	cfg *config.Config
 }
 
@@ -32,12 +34,12 @@ func NewCommands() commands {
 }
 
 func (c *commands) run(s *state, cmd command) error {
-	funct, ok := c.commandList[cmd.name]
+	f, ok := c.commandList[cmd.name]
 	if !ok {
 		return fmt.Errorf("command %v doesn't exist", cmd.name)
 	}
 
-	err := funct(s, cmd)
+	err := f(s, cmd)
 	if err != nil {
 		return fmt.Errorf("couldn't run %s, %w", cmd.name, err)
 	}
