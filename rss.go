@@ -7,6 +7,7 @@ import (
 	"html"
 	"io"
 	"net/http"
+	"time"
 )
 
 type RSSFeed struct {
@@ -26,28 +27,32 @@ type RSSItem struct {
 }
 
 func fetchFeed(ctx context.Context, feedURL string) (*RSSFeed, error) {
-	req, err := http.NewRequestWithContext(ctx, "GET", feedURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, feedURL, nil)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fetch url: %s", feedURL)
+		return nil, fmt.Errorf("couldn't create request: %w", err)
 	}
 
 	req.Header.Set("User-Agent", "gator")
 
-	client := &http.Client{}
+	client := &http.Client{Timeout: 10 * time.Second}
 	res, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("request failed: %v", err)
+		return nil, fmt.Errorf("request failed: %w", err)
 	}
 	defer res.Body.Close()
 
+	if res.StatusCode > 299 {
+		return nil, fmt.Errorf("unexpected status code: %d", res.StatusCode)
+	}
+
 	data, err := io.ReadAll(res.Body)
 	if err != nil {
-		return nil, fmt.Errorf("error: %v", err)
+		return nil, fmt.Errorf("couldn't read response body: %w", err)
 	}
 
 	var feed RSSFeed
 	if err = xml.Unmarshal(data, &feed); err != nil {
-		return nil, fmt.Errorf("error: %v", err)
+		return nil, fmt.Errorf("couldn't unmarshal feed: %w", err)
 	}
 
 	feed.Channel.Title = html.UnescapeString(feed.Channel.Title)

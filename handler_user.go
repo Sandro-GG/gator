@@ -89,18 +89,3 @@ func handlerUsers(s *state, cmd command) error {
 
 	return nil
 }
-
-func handlerAgg(s *state, cmd command) error {
-	feed, err := fetchFeed(context.Background(), "https://www.wagslane.dev/index.xml")
-	if err != nil {
-		return fmt.Errorf("failed to fetch the feed: %v", err)
-	}
-
-	fmt.Printf("Channel Title: %s\nChannel Description: %s\n", feed.Channel.Title, feed.Channel.Description)
-
-	for _, item := range feed.Channel.Item {
-		fmt.Printf("Item Title: %s\nItem Description: %s\n", item.Title, item.Description)
-	}
-
-	return nil
-}
