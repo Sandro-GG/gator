@@ -22,6 +22,8 @@ without leaving the terminal.
 - Login that switches the active user (and rejects unknown ones)
 - Database reset command to quickly wipe records during development
 - `users` command to list all registered users, marking the currently logged-in one
+- RSS feed fetching and parsing into structured Go types, with HTML entities decoded
+- `agg` command that fetches a feed and prints its channel and items
 
 ## Roadmap
 
