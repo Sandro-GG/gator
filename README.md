@@ -6,7 +6,7 @@ A CLI blog aggregator written in Go. Work in progress.
 
 `gator` is a command-line tool for following RSS feeds. It stores users, feeds,
 and posts in a PostgreSQL database so you can browse what you've subscribed to
-without leaving the terminal.
+without leaving the terminal..
 
 ## Stack
 
