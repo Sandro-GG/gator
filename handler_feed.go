@@ -40,3 +40,23 @@ func handlerAddFeed(s *state, cmd command) error {
 
 	return nil
 }
+
+func handlerFeeds(s *state, cmd command) error {
+	if len(cmd.args) != 0 {
+		return errors.New("too many arguments")
+	}
+
+	feeds, err := s.db.GetFeeds(context.Background())
+	if err != nil {
+		return fmt.Errorf("failed to get feeds: %w", err)
+	}
+
+	for _, feed := range feeds {
+		fmt.Printf("Feed Name: %s\nURL: %s\nCreated By: %s\n\n", feed.FeedName, feed.Url, feed.UserName)
+	}
+
+	return nil
+}
+
+// ensure cmd.args is 0
+// add get all feeds query and select name, url, and user's name
