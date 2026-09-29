@@ -46,6 +46,7 @@ func main() {
 	commands.register("addfeed", handlerAddFeed)
 	commands.register("feeds", handlerFeeds)
 	commands.register("follow", handlerFollow)
+	commands.register("following", handlerFollowing)
 
 	// parse cli arguments
 	if len(os.Args) < 2 {
