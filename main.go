@@ -43,6 +43,7 @@ func main() {
 	commands.register("reset", handlerReset)
 	commands.register("users", handlerUsers)
 	commands.register("agg", handlerAgg)
+	commands.register("addfeed", handlerAddFeed)
 
 	// parse cli arguments
 	if len(os.Args) < 2 {
