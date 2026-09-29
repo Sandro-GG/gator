@@ -58,5 +58,35 @@ func handlerFeeds(s *state, cmd command) error {
 	return nil
 }
 
-// ensure cmd.args is 0
-// add get all feeds query and select name, url, and user's name
+func handlerFollow(s *state, cmd command) error {
+	if len(cmd.args) != 1 {
+		return errors.New("please only provide the url parameter")
+	}
+
+	feedUrl := cmd.args[0]
+
+	currUser, err := s.db.GetUser(context.Background(), s.cfg.CurrentUsername)
+	if err != nil {
+		return fmt.Errorf("unable to get current user: %w", err)
+	}
+
+	currFeed, err := s.db.GetFeedByUrl(context.Background(), feedUrl)
+	if err != nil {
+		return fmt.Errorf("unable to get current feed: %w", err)
+	}
+
+	follow, err := s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
+		UserID:    currUser.ID,
+		FeedID:    currFeed.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("unable to create a feed follow: %w", err)
+	}
+
+	fmt.Printf("User - %s: Feed - %s\n", follow.UserName, follow.FeedName)
+
+	return nil
+}
