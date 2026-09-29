@@ -24,10 +24,11 @@ without leaving the terminal.
 - `users` command to list all registered users, marking the currently logged-in one
 - RSS feed fetching and parsing into structured Go types, with HTML entities decoded
 - `agg` command that fetches a feed and prints its channel and items
+- `addfeed` command to add a new RSS feed to the database, linked to the current user
+- `feeds` command to list all feeds in the database, including the name of the user who added each one
 
 ## Roadmap
 
-- Add and list RSS feeds
 - Follow and unfollow feeds
 - Background fetching and storing of posts
 - Browse recent posts for the logged-in user
