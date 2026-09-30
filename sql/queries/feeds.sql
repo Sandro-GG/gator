@@ -13,3 +13,16 @@ JOIN users ON users.id = feeds.user_id;
 SELECT *
 FROM feeds
 WHERE url = $1;
+
+-- name: MarkFeedFetched :exec
+UPDATE feeds
+SET 
+  last_fetched_at = NOW() AT TIME ZONE 'utc',
+  updated_at = NOW() AT TIME ZONE 'utc'
+WHERE id = $1;
+
+-- name: GetNextFeedToFetch :one
+SELECT *
+FROM feeds
+ORDER BY last_fetched_at ASC NULLS FIRST
+LIMIT 1;
