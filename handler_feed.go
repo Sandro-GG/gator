@@ -11,7 +11,7 @@ import (
 	"github.com/Sandro-GG/gator/internal/database"
 )
 
-func handlerAddFeed(s *state, cmd command) error {
+func handlerAddFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.args) != 2 {
 		return errors.New("please provide only name and url")
 	}
@@ -19,18 +19,13 @@ func handlerAddFeed(s *state, cmd command) error {
 	feedName := cmd.args[0]
 	feedUrl := cmd.args[1]
 
-	currUser, err := s.db.GetUser(context.Background(), s.cfg.CurrentUsername)
-	if err != nil {
-		return fmt.Errorf("unable to get current user: %w", err)
-	}
-
 	feed, err := s.db.CreateFeed(context.Background(), database.CreateFeedParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
 		Name:      feedName,
 		Url:       feedUrl,
-		UserID:    currUser.ID,
+		UserID:    user.ID,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create feed: %w", err)
@@ -40,7 +35,7 @@ func handlerAddFeed(s *state, cmd command) error {
 		ID:        uuid.New(),
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
-		UserID:    currUser.ID,
+		UserID:    user.ID,
 		FeedID:    feed.ID,
 	})
 	if err != nil {
@@ -50,7 +45,7 @@ func handlerAddFeed(s *state, cmd command) error {
 	fmt.Printf("Feed successfully created!\n")
 	fmt.Printf("* Name:        %s\n", feed.Name)
 	fmt.Printf("* URL:         %s\n", feed.Url)
-	fmt.Printf("* Created By:  %s\n", currUser.Name)
+	fmt.Printf("* Created By:  %s\n", user.Name)
 
 	return nil
 }
@@ -72,17 +67,12 @@ func handlerFeeds(s *state, cmd command) error {
 	return nil
 }
 
-func handlerFollow(s *state, cmd command) error {
+func handlerFollow(s *state, cmd command, user database.User) error {
 	if len(cmd.args) != 1 {
 		return errors.New("please only provide the url parameter")
 	}
 
 	feedUrl := cmd.args[0]
-
-	currUser, err := s.db.GetUser(context.Background(), s.cfg.CurrentUsername)
-	if err != nil {
-		return fmt.Errorf("unable to get current user: %w", err)
-	}
 
 	currFeed, err := s.db.GetFeedByUrl(context.Background(), feedUrl)
 	if err != nil {
@@ -93,7 +83,7 @@ func handlerFollow(s *state, cmd command) error {
 		ID:        uuid.New(),
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
-		UserID:    currUser.ID,
+		UserID:    user.ID,
 		FeedID:    currFeed.ID,
 	})
 	if err != nil {
@@ -105,12 +95,12 @@ func handlerFollow(s *state, cmd command) error {
 	return nil
 }
 
-func handlerFollowing(s *state, cmd command) error {
+func handlerFollowing(s *state, cmd command, user database.User) error {
 	if len(cmd.args) != 0 {
 		return errors.New("too many arguments")
 	}
 
-	follows, err := s.db.GetFeedFollowsForUser(context.Background(), s.cfg.CurrentUsername)
+	follows, err := s.db.GetFeedFollowsForUser(context.Background(), user.Name)
 	if err != nil {
 		return fmt.Errorf("unable to get user's following feeds: %w", err)
 	}
@@ -121,4 +111,15 @@ func handlerFollowing(s *state, cmd command) error {
 	}
 
 	return nil
+}
+
+func middlewareLoggedIn(handler func(s *state, cmd command, user database.User) error) func(*state, command) error {
+	return func(s *state, cmd command) error {
+		currUser, err := s.db.GetUser(context.Background(), s.cfg.CurrentUsername)
+		if err != nil {
+			return fmt.Errorf("this command requires you to be logged in: %w", err)
+		}
+
+		return handler(s, cmd, currUser)
+	}
 }
