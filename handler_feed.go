@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -144,6 +145,31 @@ func handlerUnfollow(s *state, cmd command, user database.User) error {
 	}
 
 	fmt.Printf("Successfully unfollowed feed: %s\n", feed.Name)
+
+	return nil
+}
+
+func handlerBrowse(s *state, cmd command, user database.User) error {
+	limit := 2
+	if len(cmd.args) > 0 {
+		parsedLimit, err := strconv.Atoi(cmd.args[0])
+		if err != nil {
+			return fmt.Errorf("invalid limit parameter: %w", err)
+		}
+		limit = parsedLimit
+	}
+
+	posts, err := s.db.GetPostsForUser(context.Background(), database.GetPostsForUserParams{
+		Name:  user.Name,
+		Limit: int32(limit),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to get posts: %w", err)
+	}
+
+	for _, post := range posts {
+		fmt.Printf("Title: %s\n Description: %s\n", post.Title, post.Description.String)
+	}
 
 	return nil
 }

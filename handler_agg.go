@@ -2,9 +2,15 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
+	"log"
+	"strings"
 	"time"
+
+	"github.com/Sandro-GG/gator/internal/database"
+	"github.com/google/uuid"
 )
 
 func handlerAgg(s *state, cmd command) error {
@@ -50,9 +56,39 @@ func scrapeFeeds(s *state) error {
 		return fmt.Errorf("failed to fetch the next feed: %w", err)
 	}
 
-	fmt.Printf("\n--- Found Feed: %s ---\n", nextFeed.Name)
-	for _, feed := range feedRSS.Channel.Item {
-		fmt.Printf("Title: %s\n", feed.Title)
+	fmt.Printf("Found %d posts in feed: %s\n", len(feedRSS.Channel.Item), nextFeed.Name)
+	for _, item := range feedRSS.Channel.Item {
+		pubDate := sql.NullTime{
+			Time:  time.Time{},
+			Valid: false,
+		}
+
+		parsedTime, err := time.Parse(time.RFC1123Z, item.PubDate)
+		if err == nil {
+			pubDate.Time = parsedTime.UTC()
+			pubDate.Valid = true
+		}
+
+		_, err = s.db.CreatePost(context.Background(), database.CreatePostParams{
+			ID:        uuid.New(),
+			CreatedAt: time.Now().UTC(),
+			UpdatedAt: time.Now().UTC(),
+			Title:     item.Title,
+			Url:       item.Link,
+			Description: sql.NullString{
+				String: item.Description,
+				Valid:  item.Description != "",
+			},
+			PublishedAt: pubDate,
+			FeedID:      nextFeed.ID,
+		})
+		if err != nil {
+			if strings.Contains(err.Error(), "duplicate key") {
+				continue
+			}
+			log.Printf("Error skipping post '%s': %v", item.Title, err)
+			continue
+		}
 	}
 
 	return nil
