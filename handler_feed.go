@@ -74,9 +74,9 @@ func handlerFollow(s *state, cmd command, user database.User) error {
 
 	feedUrl := cmd.args[0]
 
-	currFeed, err := s.db.GetFeedByUrl(context.Background(), feedUrl)
+	feed, err := s.db.GetFeedByUrl(context.Background(), feedUrl)
 	if err != nil {
-		return fmt.Errorf("unable to get current feed: %w", err)
+		return fmt.Errorf("unable to get feed: %w", err)
 	}
 
 	follow, err := s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
@@ -84,7 +84,7 @@ func handlerFollow(s *state, cmd command, user database.User) error {
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
 		UserID:    user.ID,
-		FeedID:    currFeed.ID,
+		FeedID:    feed.ID,
 	})
 	if err != nil {
 		return fmt.Errorf("unable to create a feed follow: %w", err)
@@ -122,4 +122,28 @@ func middlewareLoggedIn(handler func(s *state, cmd command, user database.User) 
 
 		return handler(s, cmd, currUser)
 	}
+}
+
+func handlerUnfollow(s *state, cmd command, user database.User) error {
+	if len(cmd.args) != 1 {
+		return errors.New("please only specify the feed's url")
+	}
+
+	feedUrl := cmd.args[0]
+	feed, err := s.db.GetFeedByUrl(context.Background(), feedUrl)
+	if err != nil {
+		return fmt.Errorf("unable to get feed: %w", err)
+	}
+
+	err = s.db.DeleteFeedFollow(context.Background(), database.DeleteFeedFollowParams{
+		UserID: user.ID,
+		FeedID: feed.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to delete feed follow: %w", err)
+	}
+
+	fmt.Printf("Successfully unfollowed feed: %s\n", feed.Name)
+
+	return nil
 }
