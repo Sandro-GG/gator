@@ -168,7 +168,7 @@ func handlerBrowse(s *state, cmd command, user database.User) error {
 	}
 
 	for _, post := range posts {
-		fmt.Printf("Title: %s\n Description: %s\n", post.Title, post.Description.String)
+		fmt.Printf("Title: %s\nDescription: %s\n\n", post.Title, post.Description.String)
 	}
 
 	return nil
